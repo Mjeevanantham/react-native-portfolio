@@ -1,0 +1,55 @@
+name: Combined Web and Mobile Build
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build_web:
+    name: Build Web
+    type: build
+    params:
+      platform: web
+      profile: production
+    custom_steps:
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production..."
+          eas deploy
+
+  build_mobile:
+    name: Build Mobile (Android & iOS)
+    type: build
+    params:
+      platform: all
+      profile: production
+    custom_steps:
+      - name: Send Email with Build Artifacts via Gmail SMTP
+        run: |
+          echo "Installing msmtp and mutt..."
+          apk add --no-cache msmtp mutt bash openssl
+
+          echo "Configuring msmtp..."
+          cat > ~/.msmtprc <<EOL
+          defaults
+          auth           on
+          tls            on
+          tls_trust_file /etc/ssl/certs/ca-certificates.crt
+          logfile        ~/.msmtp.log
+
+          account        gmail
+          host           smtp.gmail.com
+          port           587
+          from           mjeevanantham04@gmail.com
+          user           mjeevanantham04@gmail.com
+          password       duwr xlsy yifa omxi
+
+          account default : gmail
+          EOL
+          chmod 600 ~/.msmtprc
+
+          echo "Zipping build artifacts..."
+          zip -r build_artifacts.zip $EAS_BUILD_ARTIFACTS_DIR
+
+          echo "Sending email..."
+          echo "Please find the mobile build artifacts attached." | mutt -s "Mobile Build Finished" -a build_artifacts.zip -- mjeevanantham04@gmail.com
