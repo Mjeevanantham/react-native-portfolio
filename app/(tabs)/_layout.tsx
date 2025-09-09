@@ -1,55 +1,45 @@
-import AnimatedBackground from '@/components/AnimatedBackground';
-import BottomTabBar from '@/components/BottomTabBar';
-import ContactScreen from '@/Screens/Contact';
-import ExperienceScreen from '@/Screens/Experience';
-import HomeScreen from '@/Screens/Home';
-import ProjectsScreen from '@/Screens/Projects';
-import SkillsScreen from '@/Screens/Skills';
-import { TabKey } from '@/types';
-import { useTheme } from '@react-navigation/native';
-import React, { useMemo, useRef, useState } from 'react';
-import { Animated, SafeAreaView, StyleSheet } from 'react-native';
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { Platform } from 'react-native';
 
-export default function App() {
-  const theme = useTheme();
-  const [tab, setTab] = useState<TabKey>('Home');
-  const fade = useRef(new Animated.Value(1)).current;
+import { HapticTab } from '@/components/HapticTab';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import TabBarBackground from '@/components/ui/TabBarBackground';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
-  const onChangeTab = (t: TabKey) => {
-    if (t === tab) return;
-    Animated.timing(fade, { toValue: 0, duration: 220, useNativeDriver: true }).start(() => {
-      setTab(t);
-      Animated.timing(fade, { toValue: 1, duration: 260, useNativeDriver: true }).start();
-    });
-  };
-
-  const Screen = useMemo(() => {
-    switch (tab) {
-      case 'Home':
-        return <HomeScreen />;
-      case 'Projects':
-        return <ProjectsScreen />;
-      case 'Experience':
-        return <ExperienceScreen />;
-      case 'Skills':
-        return <SkillsScreen />;
-      case 'Contact':
-        return <ContactScreen />;
-      default:
-        return <HomeScreen />;
-    }
-  }, [tab]);
+export default function TabLayout() {
+  const colorScheme = useColorScheme();
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]}>
-      <AnimatedBackground />
-      <Animated.View style={{ flex: 1, opacity: fade }}>
-        {Screen}
-      </Animated.View>
-
-      <BottomTabBar currentTab={tab} onChange={onChangeTab} />
-    </SafeAreaView>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarBackground: TabBarBackground,
+        tabBarStyle: Platform.select({
+          ios: {
+            // Use a transparent background on iOS to show the blur effect
+            position: 'absolute',
+          },
+          default: {},
+        }),
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({ safe: { flex: 1 } });

@@ -3,7 +3,7 @@ import { generateA0ImageUrl } from './image';
 
 export const profile = {
     id: 'me',
-    name: 'Jeevanantham M',
+    name: 'Sanjeev Kunjuu',
     title: 'Flutter developer & Frontend Engineer',
     bio: 'I design delightful product experiences and build them with modern React Native and TypeScript. I love clean abstractions, beautiful micro-interactions, and performance-first apps.',
     avatar: generateA0ImageUrl('portrait of a modern product designer, vibrant colorful gradient, vector style', '1:1', 'avatar-01'),
