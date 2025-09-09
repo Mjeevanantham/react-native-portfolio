@@ -8,15 +8,14 @@ jobs:
   build_web:
     name: Build Web
     runs-on: ubuntu-latest
+    env:
+      EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
-
       - name: Install EAS CLI
         run: npm install -g eas-cli
-
       - name: Build Web with EAS
         run: eas build --platform web --profile production
-
       - name: Deploy to Production
         run: |
           echo "Deploying to production..."
@@ -25,21 +24,20 @@ jobs:
   build_mobile:
     name: Build Mobile (Android & iOS)
     runs-on: ubuntu-latest
+    env:
+      EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
     steps:
       - uses: actions/checkout@v3
-
       - name: Install EAS CLI and dependencies
         run: |
           npm install -g eas-cli
           sudo apt-get update
           sudo apt-get install -y msmtp mutt zip
-
       - name: Build Mobile with EAS
         run: eas build --platform all --profile production
-
       - name: Zip build artifacts
         run: zip -r build_artifacts.zip $EAS_BUILD_ARTIFACTS_DIR
-
       - name: Configure msmtp
         run: |
           cat > ~/.msmtprc <<EOL
@@ -54,10 +52,9 @@ jobs:
           port           587
           from           mjeevanantham04@gmail.com
           user           mjeevanantham04@gmail.com
-          password       ${{ secrets.GMAIL_APP_PASSWORD }}
+          password       $GMAIL_APP_PASSWORD
           account default : gmail
           EOL
           chmod 600 ~/.msmtprc
-
       - name: Send email with build artifacts
         run: echo "Please find the mobile build artifacts attached." | mutt -s "Mobile Build Finished" -a build_artifacts.zip -- mjeevanantham04@gmail.com
